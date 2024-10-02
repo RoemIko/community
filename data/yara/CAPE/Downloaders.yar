@@ -1,8 +1,10 @@
+import "pe"
+
 rule DLAgent01 {
     meta:
       author = "ditekshen"
       description = "Detects downloader agent"
-      cape_type = "DLAgent01 Downloader Payload"
+      cape_type = "DLAgent01 Payload"
     strings:
         $s1 = "Mozilla/5.0 Gecko/41.0 Firefox/41.0" fullword wide
         $s2 = "/Node:localhost /Namespace:\\\\root\\SecurityCenter2 Path AntiVirusProduct Get displayName /Format:List" fullword wide
@@ -17,7 +19,7 @@ rule DLAgent02 {
     meta:
       author = "ditekSHen"
       description = "Detects known downloader agent downloading encoded binaries in patches from paste-like websites, most notably hastebin"
-      cape_type = "DLAgent02 Downloader Payload"
+      cape_type = "DLAgent02 Payload"
     strings:
         $x1 = "/c timeout {0}" fullword wide
         $x2 = "^(https?|ftp):\\/\\/" fullword wide
@@ -42,7 +44,7 @@ rule DLAgent03 {
     meta:
       author = "ditekSHen"
       description = "Detects known Delphi downloader agent downloading second stage payload, notably from discord"
-      cape_type = "DLAgent03 Downloader Payload"
+      cape_type = "DLAgent03 Payload"
     strings:
         $delph1 = "FastMM Borland Edition" fullword ascii
         $delph2 = "SOFTWARE\\Borland\\Delphi" ascii
@@ -65,7 +67,7 @@ rule DLAgent04 {
     meta:
       author = "ditekSHen"
       description = "Detects known downloader agent downloading encoded binaries in patches from paste-like websites, most notably hastebin"
-      cape_type = "DLAgent04 Downloader Payload"
+      cape_type = "DLAgent04 Payload"
     strings:
         $x1 = "@@@http" ascii wide
         $s1 = "HttpWebRequest" fullword ascii
@@ -83,7 +85,7 @@ rule DLAgent05 {
     meta:
         author = "ditekSHen"
         description = "Detects an unknown dropper. Typically exisys as a DLL in base64-encoded gzip-compressed file embedded within another executable"
-        cape_type = "DLAgent05 Downloader Payload"
+        cape_type = "DLAgent05 Payload"
     strings:
         $s1 = "MARCUS.dll" fullword ascii wide
         $s2 = "GZipStream" fullword ascii
@@ -98,7 +100,7 @@ rule DLAgent06 {
     meta:
       author = "ditekSHen"
       description = "Detects known downloader agent downloading encoded binaries in patches"
-      cape_type = "DLAgent06 Downloader Payload"
+      cape_type = "DLAgent06 Payload"
     strings:
         $s1 = "totallist" fullword ascii wide
         $s2 = "LINKS_HERE" fullword wide
@@ -116,7 +118,7 @@ rule DLAgent07 {
     meta:
         author = "ditekSHen"
         description = "Detects delf downloader agent"
-        cape_type = "DLAgent07 Downloader Payload"
+        cape_type = "DLAgent07 Payload"
     strings:
         $s1 = "C:\\Users\\Public\\Libraries\\temp" fullword ascii
         $s2 = "SOFTWARE\\Borland\\Delphi" ascii
@@ -137,7 +139,7 @@ rule DLAgentGo {
     meta:
         author = "ditekSHen"
         description = "Detects Go-based downloader"
-        cape_type = "DLAgentGo Downloader Payload"
+        cape_type = "DLAgentGo Payload"
     strings:
         $s1 = "main.downloadFile" fullword ascii
         $s2 = "main.fetchFiles" fullword ascii
@@ -153,7 +155,7 @@ rule DLAgent09 {
     meta:
         author = "ditekSHen"
         description = "Detects known downloader agent"
-        cape_type = "DLAgent09 Downloader Payload"
+        cape_type = "DLAgent09 Payload"
     strings:
         $h1 = "//:ptth" ascii wide nocase
         $h2 = "//:sptth" ascii wide nocase
@@ -169,7 +171,7 @@ rule DLAgent10 {
     meta:
         author = "ditekSHen"
         description = "Detects known downloader agent"
-        cape_type = "DLAgent10 Downloader Payload"
+        cape_type = "DLAgent10 Payload"
     strings:
         $s1 = "powershell.exe" ascii wide nocase
         $s2 = ".DownloadFile(" ascii wide nocase
@@ -183,7 +185,7 @@ rule DLAgent11 {
     meta:
         author = "ditekSHen"
         description = "Detects downloader agent"
-        cape_type = "DLAgent11 Downloader Payload"
+        cape_type = "DLAgent11 Payload"
     strings:
         $pdb = "\\loader2\\obj\\Debug\\loader2.pdb" ascii
         $s1 = "DownloadFile" fullword ascii
@@ -199,7 +201,7 @@ rule DLAgent12 {
     meta:
         author = "ditekSHen"
         description = "Detects downloader agent"
-        cape_type = "DLAgent12 Downloader Payload"
+        cape_type = "DLAgent12 Payload"
     strings:
         $s1 = "WebClient" fullword ascii
         $s2 = "DownloadData" fullword ascii
@@ -281,7 +283,7 @@ rule Phonzy {
     meta:
         author = "ditekSHen"
         description = "Detects specific downloader agent"
-        cape_type = "Phonzy Downloader Payload"
+        cape_type = "Phonzy Payload"
     strings:
         $ua1 = "User-Agent: Mozilla/5.0 (X11; Linux" wide
         $s1 = "<meta name=\"keywords\" content=\"([\\w\\d ]*)\">" fullword wide
@@ -297,7 +299,7 @@ rule ShellcodeDLEI {
     meta:
         author = "ditekSHen"
         description = "Detects shellcode downloader, executer, injector"
-        cape_type = "Shellcode Downloader Injector Payload"
+        cape_type = "ShellcodeInject Payload"
     strings:
         $s1 = "PPidSpoof" fullword ascii
         $s2 = "ProcHollowing" fullword ascii
@@ -389,4 +391,102 @@ rule DLInjector06 {
         $s7 = "POST" fullword wide
     condition:
         uint16(0) == 0x5a4d and all of them
+}
+
+rule dotRunpeX {
+    meta:
+        author = "ditekSHen"
+        description = "Detects dotRunpeX injector"
+    strings:
+        $s1 = "\\Registry\\Machine\\System\\CurrentControlSet\\Services\\TaskKill" fullword wide
+        $s2 = "KoiVM" ascii
+        $s3 = "RunpeX.Stub.Framework" wide
+        $s4 = "ExceptionServices.ExceptionDispatchInfo" wide
+        $s5 = "Kernel32.Dll" wide
+    condition:
+        uint16(0) == 0x5a4d and all of them
+}
+
+rule DLInjector07 {
+    meta:
+        author = "ditekSHen"
+        description = "Detects downloader injector"
+    strings:
+        $x1 = "23lenrek[||]lldtn[||]daerhTemuseR[||]txetnoCdaerhTteS46woW[||]txetnoCdaerhTteS[||]txetnoCdaerhTteG46woW[||]txetnoCdaerhTteG[||]xEcollAlautriV[||]yromeMssecorPetirW[||]yromeMssecorPdaeR[||]noitceSfOweiVpamnUwZ[||]AssecorPetaerC" wide
+        $l1 = "[||]" wide
+        $r1 = "yromeMssecorPetirW" wide
+        $r2 = "xEcollAlautriV" wide
+        $r3 = "daerhTemuseR" ascii wide
+        $r4 = "noitceSfOweiVpamnUwZ" wide
+        $s1 = "Debugger Detected" fullword wide
+        $s2 = "payload" fullword ascii
+        $s3 = "_ENABLE_PROFILING" fullword wide // Confuser Anti-Debug
+    condition:
+        uint16(0) == 0x5a4d and (1 of ($x*) or (1 of ($l*) and 2 of ($r*)) or 6 of them)
+}
+
+rule RookIEDownloader {
+    meta:
+        author = "ditekSHen"
+        description = "Detect malware downlaoder, variant of ZombieBoy downloader"
+    strings:
+        $s1 = "shell:::{2559a1f3-21d7-11d4-bdaf-00c04f60b9f0}" fullword ascii
+        $s2 = "taskkill /f /im hh.exe" fullword ascii
+        $s3 = "RookIE/1.0" fullword ascii
+        $s4 = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\0" fullword ascii
+        $s5 = "#32770" fullword ascii
+    condition:
+        uint16(0) == 0x5a4d and 4 of them
+}
+
+rule PackedLoader {
+    meta:
+        author = "ditekShen"
+        description = "Detects unknown loader / packer"
+    strings:
+        $s1 = "Error at hooking API \"%S\"" wide
+        $s2 = "Dumping first %d bytes:" wide
+        $s3 = "Error at initialization of bundled DLL: %s" wide
+        $s4 = "GetMemoryForDLL()" ascii
+        $s5 = "type=activation&code=" ascii
+        $s6 = "activation.php?code=" ascii
+        $s7 = "&hwid=" ascii
+        $s8 = "&hash=" ascii
+        $s9 = "type=deactivation&hash=" ascii
+        $s10 = "deactivation.php?hash=" ascii
+        $s11 = "BANNED" fullword ascii
+        $s12 = "GetAdaptersInfo" ascii
+    condition:
+        uint16(0) == 0x5a4d and 11 of them
+}
+
+rule PWSHDLLDL {
+    meta:
+        author = "ditekShen"
+        description = "Detects downloader"
+    strings:
+        $s1 = "powershell.exe Set-ExecutionPolicy Bypass -Scope Process ; powershell -file " fullword wide nocase
+        $s2 = "objShell.run \"powershell -WindowStyle hidden -command wscript.exe //b //nologo '" fullword wide nocase
+        $s3 = "cmd.exe /c schtasks.exe /create /tn \"" fullword wide nocase
+        $s4 = "-WindowStyle hidden -command wscript.exe //b //nologo '" fullword wide nocase
+        $s6 = "\" /tr \"wscript.exe //b //nologo '" fullword wide nocase
+        $s7 = "\" -Value \"Powershell.exe -WindowStyle hidden \"\"& '" fullword wide nocase
+        $op0 = { 61 01 00 34 53 79 73 74 65 6d 2e 57 65 62 2e 53 }
+        $op1 = { 4b 04 00 00 34 01 00 00 7f 05 00 00 1a }
+    condition:
+        uint16(0) == 0x5a4d and pe.is_dll() and 5 of them
+}
+
+rule VBSDownloader {
+    meta:
+        author = "ditekShen"
+        description = "Detects second stage VBS downloader of third stage VBS"
+    strings:
+        $s1 = "CreateObject(\"MSXML2.ServerXMLHTTP\")" wide
+        $s2 = ".Open \"GET\"," wide
+        $s3 = ".Send" wide
+        $s4 = ".responseText" wide
+        $s5 = "ExecuteGlobal" wide
+    condition:
+       filesize < 50KB and all of them 
 }
