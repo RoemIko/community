@@ -39,7 +39,7 @@ class UsesRemoteDesktopSession(Signature):
         ]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             for utility in utilities:
@@ -66,7 +66,7 @@ class UsesRDPClip(Signature):
         utilities = ["rdpclip ", "rdpclip.exe"]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             for utility in utilities:
@@ -89,7 +89,7 @@ class RDPTCPKey(Signature):
     mbcs += ["OC0008", "C0036"]  # micro-behaviour
 
     def run(self):
-        indicators = [".*\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Terminal Server\\\\WinStations\\\\RDP-Tcp"]
+        indicators = [r".*\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp"]
 
         for indicator in indicators:
             match = self.check_write_key(pattern=indicator, regex=True)

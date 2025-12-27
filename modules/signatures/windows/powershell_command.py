@@ -75,7 +75,7 @@ class PowershellCommandSuspicious(Signature):
         ]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if "powershell" in lower:
@@ -166,7 +166,7 @@ class PowershellRenamed(Signature):
         ]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if "powershell" not in lower:
@@ -262,7 +262,7 @@ class PowershellReversed(Signature):
         ]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             for command in commands:
@@ -293,7 +293,7 @@ class PowershellVariableObfuscation(Signature):
 
     def run(self):
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if "powershell" in lower:
@@ -416,7 +416,9 @@ class PowershellDownload(Signature):
     # Migrated by @CybercentreCanada
     authors = ["FDD", "Cuckoo Technologies", "@CybercentreCanada"]
     minimum = "1.2"
-    ttps = ["T1112", "T1086"]
+    ttps = ["T1064", "T1086"]  # MITRE v6
+    ttps += ["T1059", "T1059.001"]  # MITRE v7
+    mbcs = ["OB0009", "E1059"]
     evented = True
 
     filter_apinames = set(["recv"])
@@ -460,3 +462,25 @@ class PowershellRequest(Signature):
             return True
         else:
             return False
+
+
+class PowershellHistorySaveMod(Signature):
+    name = "powershell_history_save_mod"
+    description = "Attempts to modify or disable PowerShell history logs."
+    severity = 2
+    categories = ["command"]
+    authors = ["bartblaze"]
+    minimum = "1.3"
+    evented = True
+    ttps = ["T1562", "T1562.003"]
+
+    def run(self):
+        ret = False
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
+        for cmdline in cmdlines:
+            lower = cmdline.lower()
+            if "powershell" in lower and "historysavestyle" in lower:
+                ret = True
+                self.data.append({"command": cmdline})
+
+        return ret

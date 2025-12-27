@@ -19,7 +19,7 @@ from lib.cuckoo.common.abstracts import Signature
 class UsesMSProtocol(Signature):
     name = "uses_ms_protocol"
     description = "Uses a Microsoft default handler or protocol."
-    severity = 3
+    severity = 2
     categories = ["evasion"]
     authors = ["bartblaze"]
     minimum = "1.3"
@@ -118,7 +118,7 @@ class UsesMSProtocol(Signature):
         ]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             for utility in utilities:

@@ -33,16 +33,16 @@ class ClearsLogs(Signature):
 
     def run(self):
         file_indicators = [
-            ".*\\\\Windows\\\\Logs.*",
-            ".*\\\\inetpub\\\\logs\\\\LogFiles.*",
-            ".*\\\\Windows\\\\System32\\\\Winevt.*",
+            r".*\\Windows\\Logs.*",
+            r".*\\inetpub\\logs\\LogFiles.*",
+            r".*\\Windows\\System32\\Winevt.*",
             ".*\.etl$",
             ".*\.evt$",
             ".*\.evtx$",
         ]
 
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             if "wevtutil" in cmdline.lower() and "cl" in cmdline.lower():
                 self.data.append({"command": cmdline})

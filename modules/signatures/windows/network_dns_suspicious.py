@@ -13,12 +13,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 try:
     import re2 as re
 except ImportError:
     import re
 
 from lib.cuckoo.common.abstracts import Signature
+from lib.cuckoo.common.constants import CUCKOO_ROOT
+
+tlds_re = []
+tld_path = os.path.join(CUCKOO_ROOT, "data", "malicioustlds.txt")
+HAVE_MALTDS = False
+if os.path.exists(tld_path):
+    with open(tld_path) as f:
+        for line in f:
+            line = line.strip()
+            if line and line.startswith("."):
+                tld = line.lstrip(".")
+                # The file already imports `re`, so we can use it.
+                # Escape dots for regex, e.g., 'co.ua' -> 'co\.ua'
+                escaped_tld = re.escape(tld)
+                tlds_re.append(r".*\.{0}$".format(escaped_tld))
+if tlds_re:
+    HAVE_MALTDS = True
 
 
 class NetworkDNSTunnelingRequest(Signature):
@@ -332,7 +351,8 @@ class NetworkDOHTLS(Signature):
             "104.236.178.232",
             "108.61.201.119",
             "114.115.240.175",
-            "115.159.154.226" "116.203.35.255",
+            "115.159.154.226",
+            "116.203.35.255",
             "116.203.70.156",
             "118.24.208.197",
             "118.89.110.78",
@@ -496,25 +516,212 @@ class NetworkDNSURLShortener(Signature):
 
     def run(self):
         domain_indicators = [
-            "bit.ly",
-            "cutt.ly",
-            "goo.gl",
-            "www.shorturl.at",
-            "n9.cl",
-            "is.gd",
-            "rb.gy",
-            "long.af",
-            "ykm.de",
-            "ito.mx",
-            "me2.do",
-            "bit.do",
-            "coki.me",
-            "hyp.ae",
-            "iurl.vip",
-            "42url.com",
-            "t.ly",
-            "rebrand.ly",
+            "1url.com",
+            "2ly.link",
             "2no.co",
+            "2uuu.me",
+            "3c5.com",
+            "4x.si",
+            "42url.com",
+            "7x.qa",
+            "9lick.me",
+            "abre.ai",
+            "adcraft.co",
+            "adcrun.ch",
+            "adf.ly",
+            "adflav.com",
+            "aiy.ooo",
+            "aka.gr",
+            "amzn.to",
+            "artist.link",
+            "b2n.ir",
+            "bc.vc",
+            "bee4.biz",
+            "belea.link",
+            "bit.do",
+            "bit.ly",
+            "bitly.com",
+            "bitly.com.vn",
+            "bitly.lc",
+            "bitly.ws",
+            "bom.so",
+            "buff.ly",
+            "buzurl.com",
+            "bx.ms",
+            "cektkp.com",
+            "ci.ci",
+            "clck.ru",
+            "cml.lol",
+            "coki.me",
+            "cur.lv",
+            "cut.by",
+            "cutt.ly",
+            "cutt.us",
+            "cuty.io",
+            "d.to",
+            "db.tt",
+            "dft.ba",
+            "dik.si",
+            "dub.co",
+            "dub.sh",
+            "dwz.mk",
+            "e.vg",
+            "encr.pw",
+            "encurtador.dev",
+            "etd.bz",
+            "filoops.info",
+            "fun.ly",
+            "fzy.co",
+            "gg-l.xyz",
+            "gog.li",
+            "golinks.co",
+            "goo.by",
+            "goo.gd",
+            "goo.gl",
+            "goo.su",
+            "han.gl",
+            "hit.my",
+            "hyp.ae",
+            "hyperurl.co",
+            "ic9.in",
+            "id.tl",
+            "idm.in",
+            "iii.im",
+            "iiil.io",
+            "ilang.in",
+            "insprl.com",
+            "iplogger.com",
+            "iplogger.org",
+            "is.gd",
+            "ito.mx",
+            "iurl.vip",
+            "ity.im",
+            "j.mp",
+            "jii.li",
+            "komin.fo",
+            "kortlink.dk",
+            "kutti.co",
+            "lc.cx",
+            "link.zip.net",
+            "linksshortcut.com",
+            "linkto.im",
+            "litby.us",
+            "ln.run",
+            "lnk.co",
+            "lnk.direct",
+            "lnk.ink",
+            "lnk.pw",
+            "lnkd.in",
+            "lnkfi.re",
+            "long.af",
+            "longurl.in",
+            "maxiurl.com",
+            "mcaf.ee",
+            "me2.do",
+            "merky.de",
+            "mjt.lu",
+            "mtr.bio",
+            "my5353.com",
+            "mylinks.ai",
+            "n9.cl",
+            "nanourly.in",
+            "neya.io",
+            "nov.io",
+            "odesli.co",
+            "onx.la",
+            "ouvaton.link",
+            "ow.ly",
+            "p6l.org",
+            "picz.us",
+            "po.st",
+            "postly.link",
+            "prettylinkpro.com",
+            "q.gs",
+            "qr.ae",
+            "qr.net",
+            "qrco.de",
+            "rb.gy",
+            "rebrand.ly",
+            "rebrandly.com",
+            "rebrandly.info",
+            "relink.is",
+            "ricardo.news",
+            "s.devh.in",
+            "s.ee",
+            "s.id",
+            "s.rlp.de",
+            "s3r.io",
+            "s59.site",
+            "scrnch.me",
+            "shly.link",
+            "shorten.ee",
+            "shorten.is",
+            "shorten.tv",
+            "shortquik.com",
+            "shorturl.ae",
+            "shorturl.at",
+            "shrtcnl.com",
+            "sht.ac",
+            "sk.gy",
+            "sl8.in",
+            "smarturl.it",
+            "smurl.fr",
+            "sn.rs",
+            "snip.ly",
+            "song.link",
+            "spoo.me",
+            "sprl.in",
+            "srink.co",
+            "su.pr",
+            "surl.li",
+            "t.co",
+            "t.ly",
+            "temporary-url.com",
+            "tg.pe",
+            "tiny.cc",
+            "tinyarrows.com",
+            "tinyurl.com",
+            "tinyurl.mobi",
+            "tota2.com",
+            "tr.im",
+            "trimz.me",
+            "tt.vg",
+            "tweez.me",
+            "twitthis.com",
+            "twixar.com",
+            "twixar.me",
+            "tyny.to",
+            "u.bb",
+            "u.to",
+            "urled.cc",
+            "urled.pro",
+            "urless.com",
+            "urlr.me",
+            "urlshort.dev",
+            "urltin.com",
+            "urlz.fr",
+            "ux9.de",
+            "v.gd",
+            "v.ht",
+            "vtaurl.com",
+            "vzturl.com",
+            "webz.cc",
+            "wp.me",
+            "x.co",
+            "xlinkz.info",
+            "xtu.me",
+            "xy2.eu",
+            "ykm.de",
+            "yirra.net",
+            "yourls.org",
+            "youtu.be",
+            "yu2.it",
+            "yu3.io",
+            "zpag.es",
+            "zpr.io",
+            "zurl.to",
+            "zws.im",
+            "zzb.bz",
         ]
 
         for indicator in domain_indicators:
@@ -552,35 +759,19 @@ class Suspicious_TLD(Signature):
     severity = 2
     categories = ["network"]
     # Migrated by @CybercentreCanada
-    authors = ["RedSocks", "Kevin Ross", "@CybercentreCanada"]
+    # @bartblaze: Moved the TLDs to data/malicioustlds.txt and upd class
+    authors = ["RedSocks", "Kevin Ross", "@CybercentreCanada", "bartblaze"]
     minimum = "1.2"
 
     def run(self):
-        domains_re = [
-            (".*\\.by$", "Belarus domain TLD"),
-            (".*\\.cc$", "Cocos Islands domain TLD"),
-            (".*\\.onion$", "TOR hidden services domain TLD"),
-            (".*\\.pw$", "Palau domain TLD"),
-            (".*\\.ru$", "Russian Federation domain TLD"),
-            (".*\\.su$", "Soviet Union domain TLD"),
-            (".*\\.top$", "Generic top level domain TLD"),
-            (".*\\.tk$", "Tokelau domain TLD"),
-            (".*\\.ua$", "Ukraine domain TLD"),
-            (".*\\.xyz$", "Generic top level domain TLD"),
-            (".*\\.za$", "South Africa domain TLD"),
-            (".*\\.ng$", "Nigeria domain TLD"),
-        ]
         queried_domains = []
 
-        for indicator in domains_re:
-            matches = self.check_domain(pattern=indicator[0], regex=True, all=True)
+        for indicator in tlds_re:
+            matches = self.check_domain(pattern=indicator, regex=True, all=True)
             if matches:
-                for tld in matches:
-                    if tld not in queried_domains:
-                        queried_domains.append(tld)
-                        self.data.append({"domain": tld})
+                for tld_match in matches:
+                    if tld_match not in queried_domains:
+                        queried_domains.append(tld_match)
+                        self.data.append({"domain": tld_match})
 
-        if len(self.data) > 0:
-            return True
-        else:
-            return False
+        return len(self.data) > 0

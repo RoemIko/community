@@ -33,7 +33,7 @@ strings:
 	$ = "-decode" ascii wide nocase
 	$ = "bypass" ascii wide nocase
 condition:
-	isLNK and any of them
+	isLNK and 2 of them
 }
 
 rule Script_in_LNK
@@ -226,3 +226,21 @@ strings:
 condition:
 	isLNK and any of them
 }
+
+rule WebDAV_in_LNK
+{
+meta:
+	description = "Identifies WebDAV in shortcut (LNK) file."
+	author = "@bartblaze"
+	date = "2025-11"
+	tlp = "White"
+
+strings:
+    $ = "\\DavWWWRoot\\" ascii wide nocase
+    $ = "\\webdav\\" ascii wide nocase
+
+condition:
+    isLNK and any of them
+}
+
+

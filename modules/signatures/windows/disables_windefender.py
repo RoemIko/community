@@ -21,11 +21,11 @@ class DisablesWindowsDefender(Signature):
     def run(self):
         ret = False
 
-        keys = [
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?Windows\\ Defender\\\\.*",
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?Policies\\\\Microsoft\\\\Windows\\ Defender\\\\.*",
-            ".*\\\\SYSTEM\\\\(CurrentControlSet|ControlSet001)\\\\services\\\\WinDefend\\\\.*",
-        ]
+        keys = (
+            r".*\\SOFTWARE\\(Wow6432Node\\)?Windows\\ Defender\\.*",
+            r".*\\SOFTWARE\\(Wow6432Node\\)?Policies\\Microsoft\\Windows\\ Defender\\.*",
+            r".*\\SYSTEM\\(CurrentControlSet|ControlSet001)\\services\\WinDefend\\.*",
+        )
 
         cmds = [
             "disableantispyware",
@@ -65,7 +65,7 @@ class DisablesWindowsDefender(Signature):
                 self.mbcs += ["OB0006", "E1112"]
                 self.mbcs += ["OC0008", "C0036"]  # micro-behaviour
 
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             for cmd in cmds:
@@ -95,7 +95,7 @@ class WindowsDefenderPowerShell(Signature):
 
     def run(self):
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if "set-mppreference" in lower:
@@ -122,19 +122,19 @@ class RemovesWindowsDefenderContextMenu(Signature):
     mbcs += ["OC0008", "C0036"]  # micro-behaviour
 
     def run(self):
-        indicators = [
-            "HKEY_CLASSES_ROOT\\\\\*\\\\shellex\\\\ContextMenuHandlers\\\\EPP$",
-            "HKEY_CLASSES_ROOT\\\\Directory\\\\shellex\\\\ContextMenuHandlers\\\\EPP$",
-            "HKEY_CLASSES_ROOT\\\\Drive\\\\shellex\\\\ContextMenuHandlers\\\\EPP$",
-        ]
-        pat = re.compile(".*\\\\shellex\\\\contextmenuhandlers\\\\epp")
+        indicators = (
+            r"HKEY_CLASSES_ROOT\\\*\\shellex\\ContextMenuHandlers\\EPP$",
+            r"HKEY_CLASSES_ROOT\\Directory\\shellex\\ContextMenuHandlers\\EPP$",
+            r"HKEY_CLASSES_ROOT\\Drive\\shellex\\ContextMenuHandlers\\EPP$",
+        )
+        pat = re.compile(r".*\\shellex\\contextmenuhandlers\\epp")
 
         for indicator in indicators:
             match = self.check_write_key(pattern=indicator, regex=True)
             if match:
                 return True
 
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if re.search(pat, lower):
@@ -158,17 +158,15 @@ class DisablesWindowsDefenderLogging(Signature):
     mbcs += ["OC0008", "C0036"]  # micro-behaviour
 
     def run(self):
-        indicators = [
-            ".*\\\\System\\\\CurrentControlSet\\\\Control\\\\WMI\\\\Autologger\\\\Defender(Api|Audit)Logger",
-        ]
-        pat = re.compile(".*\\\\system\\\\currentcontrolset\\\\control\\\\wmi\\\\autologger\\\\defender(api|audit)logger")
+        indicators = (r".*\\System\\CurrentControlSet\\Control\\WMI\\Autologger\\Defender(Api|Audit)Logger",)
+        pat = re.compile(r".*\\system\\currentcontrolset\\control\\wmi\\autologger\\defender(api|audit)logger")
 
         for indicator in indicators:
             match = self.check_write_key(pattern=indicator, regex=True)
             if match:
                 return True
 
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if re.search(pat, lower):
@@ -201,6 +199,82 @@ class DisablesWindowsDefenderDISM(Signature):
             match = self.check_executed_command(pattern=indicator, regex=True)
             if match:
                 self.data.append({"command": match})
+                return True
+
+        return False
+
+
+class AddWindowsDefenderExclusions(Signature):
+    name = "add_windows_defender_exclusions"
+    description = "Attempts to add Windows Defender Exclusions for specific file types by extension"
+    severity = 3
+    categories = ["bypass", "stealth", "anti-av"]
+    authors = ["@para0x0dise"]
+    minimum = "1.2"
+    ttps = ["T1562.001"]
+    references = [
+        "https://github.com/elastic/protections-artifacts/blob/main/behavior/rules/windows/defense_evasion_windows_defender_exclusions_by_extension.toml",
+    ]
+    evented = True
+
+    filter_apinames = set(["RegSetValueExA", "RegSetValueExW", "NtSetValueKey"])
+
+    def __init__(self, *args, **kwargs):
+        Signature.__init__(self, *args, **kwargs)
+        self.detected = False
+
+    def on_call(self, call, process):
+        if not "\\windows\\microsoft.net" in process["module_path"].lower():
+            regKeyPath = self.get_argument(call, "FullName").lower()
+            valueName = self.get_argument(call, "ValueName")
+            buf = self.get_argument(call, "Buffer")
+            if buf == "0" and (
+                "software\\policies\\microsoft\\windows defender\\exclusions\\extensions\\" in regKeyPath
+                and any(
+                    extension in valueName
+                    for extension in (
+                        "exe",
+                        "pif",
+                        "scr",
+                        "js",
+                        "vbs",
+                        "wsh",
+                        "hta",
+                        "cpl",
+                        "jse",
+                        "vbe",
+                        "bat",
+                        "cmd",
+                        "dll",
+                        "ps1",
+                    )
+                )
+            ):
+                self.data.append({"regkey": regKeyPath})
+                self.detected = True
+
+    def on_complete(self):
+        if self.detected:
+            return True
+        return False
+
+
+class RemovesWindowsDefenderUpdates(Signature):
+    name = "removes_windows_defender_updates"
+    description = "Attempts to remove Windows Defender definition updates"
+    severity = 3
+    categories = ["anti-av"]
+    authors = ["bartblaze"]
+    minimum = "1.3"
+    evented = True
+    ttps = ["T1562", "T1562.001"]
+    reference = ["https://www.microsoft.com/en-us/wdsi/defenderupdates"]
+
+    def run(self):
+        for cmdline in self.results.get("behavior", {}).get("summary", {}).get("executed_commands", []):
+            lower = cmdline.lower()
+            if "mpcmdrun" in lower and "removedefinitions" in lower:
+                self.data.append({"command": cmdline})
                 return True
 
         return False

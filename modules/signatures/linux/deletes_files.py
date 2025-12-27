@@ -1,4 +1,8 @@
+import logging
+
 from lib.cuckoo.common.abstracts import Signature
+
+log = logging.getLogger(__name__)
 
 
 class LinuxDeletesFiles(Signature):
@@ -45,7 +49,11 @@ class LinuxDeletesFiles(Signature):
 
         # Return the filename from retrieved from the api call.
         if self._current_call_list:
-            return self._current_call_list[0].split(" ")[1][1:-1]
+            try:
+                log.debug(f"LinuxDeletedFiles: self._current_call_list[0] = {self._current_call_list[0]}")
+                return self._current_call_list[0].split(" ")[1][1:-1]
+            except IndexError:
+                return None
 
         return None
 

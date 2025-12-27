@@ -34,13 +34,13 @@ class BrowserAddon(Signature):
 
     def run(self):
         reg_indicators = [
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?Microsoft\\\\Internet\\ Explorer\\\\Toolbar\\\\.*",
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?Mozilla\\\\Firefox\\\\Extensions\\\\.*",
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?MozillaPlugins\\\\.*",
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?Google\\\\Chrome\\\\Extensions\\\\.*",
+            r".*\\SOFTWARE\\(Wow6432Node\\)?Microsoft\\Internet\\ Explorer\\Toolbar\\.*",
+            r".*\\SOFTWARE\\(Wow6432Node\\)?Mozilla\\Firefox\\Extensions\\.*",
+            r".*\\SOFTWARE\\(Wow6432Node\\)?MozillaPlugins\\.*",
+            r".*\\SOFTWARE\\(Wow6432Node\\)?Google\\Chrome\\Extensions\\.*",
         ]
         whitelist = [
-            ".*\\\\SOFTWARE\\\\(Wow6432Node\\\\)?Microsoft\\\\Internet\\ Explorer\\\\Toolbar\\\\Locked$",
+            r".*\\SOFTWARE\\(Wow6432Node\\)?Microsoft\\Internet\\ Explorer\\Toolbar\\Locked$",
         ]
         found = False
         for indicator in reg_indicators:
@@ -71,7 +71,7 @@ class ChromiumBrowserExtensionDirectory(Signature):
 
     def run(self):
         ret = False
-        cmdlines = self.results["behavior"]["summary"]["executed_commands"]
+        cmdlines = self.results.get("behavior", {}).get("summary", {}).get("executed_commands", [])
         for cmdline in cmdlines:
             lower = cmdline.lower()
             if "--load-extension=" in lower:
